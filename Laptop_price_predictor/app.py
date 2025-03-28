@@ -1,5 +1,6 @@
 import streamlit as st
 import pickle
+import numpy as np
 
 # import the model
 pipe = pickle.load(open('pipe.pkl', 'rb'))
@@ -18,7 +19,7 @@ company = st.selectbox('Brand', df['Company'].unique())
 type = st.selectbox('Type', df['TypeName'].unique())
 
 # Ram
-type = st.selectbox('Ram(in GB)', [2,4,6,8,16,24,32,64])
+ram = st.selectbox('Ram(in GB)', [2,4,6,8,16,24,32,64])
 
 # Weight
 weight = st.number_input('Weight of the Laptop')
@@ -50,4 +51,20 @@ gpu = st.selectbox('GPU', df['Gpu_brand'].unique())
 os = st.selectbox('OS', df['os'].unique())
 
 if st.button('Predict Price'):
-    pass
+    # query
+    ppi = None
+    if touchscreen == "Yes":
+        touchscreen = 1
+    else:
+        touchscreen = 0
+    if ips == "Yes":
+        ips = 1
+    else:
+        ips = 0
+    X_res = int(resolution.split('x')[0])
+    Y_res = int(resolution.split('x')[1])
+    ppi = ((X_res**2) + (Y_res**2))**0.5/screen_size
+    query = np.array([company, type, ram, weight, touchscreen, ips, ppi, cpu, hdd, ssd,gpu, os])
+
+    query = query.reshape(1,12)
+    st.title("The predicted price of this configuration is " + str(int(np.exp(pipe.predict(query)[0]))))
